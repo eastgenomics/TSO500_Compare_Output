@@ -283,12 +283,12 @@ def extract_data(file_name, category_regex):
 
 
 if __name__ == "__main__":
-    truth_file = (r"files_to_compare/"
-                  + r"*PCD*"
-                  + r"_CombinedVariantOutput.tsv")
     validation_file = (r"files_to_compare/"
-                       + r"*TSOD*"
+                       + r"*PCD*"
                        + r"_CombinedVariantOutput.tsv")
+    truth_file = (r"files_to_compare/"
+                  + r"*TSOD*"
+                  + r"_CombinedVariantOutput.tsv")
     validation_r_file = (r"files_to_compare/"
                          + r"*R-*PC*"
                          + r"_CombinedVariantOutput.tsv")
