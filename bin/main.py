@@ -150,7 +150,8 @@ def plot_results_venn(unique_truth, unique_valid, intersect, venn_name):
     # plot venn diagram of shared variants and unique to each variant
     venn2(subsets=(len(unique_truth), len(unique_valid), len(intersect)),
           set_labels=('truth', 'val', 'shared'))
-    title=venn_name.partition("/")[2].partition("_")[0] + ' Truth vs Validation'
+    title = venn_name.partition("/")[2].partition("_")[0]
+            + ' Truth vs Validation'
     plt.title(title, fontweight='bold', fontsize=10, pad=25)
     plt.savefig(venn_name)
     plt.close()
@@ -258,23 +259,22 @@ def parse_small_variants(file):
 
 
 def barplots(dat, type):
-    df = dat[["base_ID",type+"Truth",
-                                        type+"Validation",
-                                        type+"Validation R",]]
+    df = dat[["base_ID", type+"Truth",
+                type+"Validation", type+"Validation R",]]
     df.columns = [col.replace(type, '') for col in df.columns]
     df_long = df.reset_index()
-    df_long = pd.melt(df_long,id_vars='base_ID',
+    df_long = pd.melt(df_long, id_vars='base_ID',
                             value_vars=['Truth', 'Validation', 'Validation R'])
 
-    df_long = df_long.rename(columns={'variable': 'Sample type',
-                                    'value': type,
-                                        'base_ID': 'Sample ID'})
+    df_long = df_long.rename(columns=
+                                    {'variable': 'Sample type',
+                                    'value': type, 'base_ID': 'Sample ID'})
 
 
     plot = (ggplot(df_long, aes(x='Sample ID', y=type, fill='Sample type'))
     + geom_col(stat='identity', position='dodge')
     + labs(title=type)
-    + theme_classic() 
+    + theme_classic()
     + theme(axis_text_x=element_text(rotation=-15, hjust=0.1))
     )
 
