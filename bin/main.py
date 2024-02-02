@@ -260,14 +260,13 @@ def parse_small_variants(file):
 
 def barplots(dat, type):
     df = dat[["base_ID", type+"Truth",
-                type+"Validation", type+"Validation R",]]
+            type+"Validation", type+"Validation R"]]
     df.columns = [col.replace(type, '') for col in df.columns]
     df_long = df.reset_index()
     df_long = pd.melt(df_long, id_vars='base_ID',
-                            value_vars=['Truth', 'Validation', 'Validation R'])
+                        value_vars=['Truth', 'Validation', 'Validation R'])
 
-    df_long = df_long.rename(columns=
-                                    {'variable': 'Sample type',
+    df_long = df_long.rename(columns={'variable': 'Sample type',
                                     'value': type, 'base_ID': 'Sample ID'})
 
     plot = (ggplot(df_long, aes(x='Sample ID', y=type, fill='Sample type'))
