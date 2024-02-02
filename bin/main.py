@@ -3,17 +3,15 @@ Compares output between two TSO500 runs for the same set of samples
 """
 
 import re
-from plotnine import (ggplot, geom_point, stat_smooth,
-                      labs, aes, geom_text, theme_classic,
-                      xlim, ylim)
+from plotnine import *
 import pandas as pd
 import glob
 import os
 import scipy
+import scipy.stats
 import numpy as np
 from matplotlib_venn import venn2
 from matplotlib import pyplot as plt
-
 
 def get_sample_names(truth_glob, validation_glob, validation_r_glob):
     truth_samples = glob.glob(truth_glob)
@@ -118,15 +116,15 @@ def make_scatter_plots(sample_df):
                              "truth_vs_validation",
                              truth_name, valid_name)
 
-        venn_name = ("output/{}_truth_vs_valid_r_venn.png"
+        venn_name = ("output/{}R_truth_vs_valid_r_venn.png"
                      .format(row["base_ID"]))
         compare_outputs(row["truth_file"],
                         row["validation_r_file"],
-                        "output/{}_R_intersect.tsv".format(row["base_ID"]),
-                        "output/{}_R_truth_only.tsv".format(row["base_ID"]),
-                        "output/{}_R_valid_only.tsv".format(row["base_ID"]),
+                        "output/{}R_intersect.tsv".format(row["base_ID"]),
+                        "output/{}R_truth_only.tsv".format(row["base_ID"]),
+                        "output/{}R_valid_only.tsv".format(row["base_ID"]),
                         venn_name)
-        plot_results_scatter("output/{}_R_intersect.tsv"
+        plot_results_scatter("output/{}R_intersect.tsv"
                              .format(row["base_ID"]),
                              row["base_ID"],
                              "truth_vs_validation_repeat",
@@ -151,8 +149,10 @@ def get_misc_info(file_name):
 def plot_results_venn(unique_truth, unique_valid, intersect, venn_name):
     # plot venn diagram of shared variants and unique to each variant
     venn2(subsets=(len(unique_truth), len(unique_valid), len(intersect)),
-          set_labels=('unique to truth', 'unique to val', 'shared'))
-    plt.title('Truth vs Validation', fontweight='bold', fontsize=20, pad=30)
+          set_labels=('truth', 'val', 'shared'))
+    title = venn_name.partition("/")[2].partition("_")[0]
+    title = title + ' Truth vs Validation'
+    plt.title(title, fontweight='bold', fontsize=10, pad=25)
     plt.savefig(venn_name)
     plt.close()
 
@@ -258,6 +258,32 @@ def parse_small_variants(file):
     return pd.read_csv(output_name, sep="\t")
 
 
+def barplots(dat, type):
+    df = dat[["base_ID", type+"Truth",
+                type+"Validation", type+"Validation R"]]
+    df.columns = [col.replace(type, '') for col in df.columns]
+    df_long = df.reset_index()
+    df_long = pd.melt(df_long, id_vars='base_ID',
+                    value_vars=['Truth', 'Validation', 'Validation R'])
+
+    df_long = df_long.rename(columns={'variable': 'Sample type',
+                                        'value': type,
+                                        'base_ID': 'Sample ID'})
+
+    plot = (ggplot(df_long, aes(x='Sample ID', y=type, fill='Sample type'))
+            + geom_col(stat='identity', position='dodge')
+            + labs(title=type)
+            + theme_classic()
+            + theme(axis_text_x=element_text(rotation=-15, hjust=0.1)))
+
+    if type == "Percent Unstable MSI Sites ":
+        plot = plot + ylim(0, 100)
+        plot = plot + labs(title="Percent (%) Unstable MSI Sites ")
+
+    outfile = "output/" + type + " barplots.png"
+    plot.save(outfile, height=6, width=10)
+
+
 def extract_data(file_name, category_regex):
     return_lines = []
     with open(file_name, "r") as f:
@@ -283,18 +309,27 @@ def extract_data(file_name, category_regex):
 
 
 if __name__ == "__main__":
-    validation_file = (r"files_to_compare/"
+    validation_file = (r"dna_cvo_qc_to_compare/"
                        + r"*PCD*"
                        + r"_CombinedVariantOutput.tsv")
-    truth_file = (r"files_to_compare/"
+    truth_file = (r"dna_cvo_qc_to_compare/"
                   + r"*TSOD*"
                   + r"_CombinedVariantOutput.tsv")
-    validation_r_file = (r"files_to_compare/"
+    validation_r_file = (r"dna_cvo_qc_to_compare/"
                          + r"*R-*PC*"
                          + r"_CombinedVariantOutput.tsv")
     sample_df = get_sample_names(truth_file, validation_file,
                                  validation_r_file)
     make_scatter_plots(sample_df)
     make_misc_info_plots(sample_df)
+
+    file_name = 'output/TMB_MSI_metrics.tsv'
+    dat = pd.read_csv(file_name, sep='\t')
+    barplots(dat, "Total TMB ")
+    barplots(dat, "Coding Region Size in Megabases ")
+    barplots(dat, "Number of Passing Eligible Variants ")
+    barplots(dat, "Usable MSI Sites ")
+    barplots(dat, "Total MSI Sites Unstable ")
+    barplots(dat, "Percent Unstable MSI Sites ")
     # clean up temp folder
     os.system('rm -rf temp/*')
