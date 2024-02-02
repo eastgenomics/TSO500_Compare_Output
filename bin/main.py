@@ -269,12 +269,18 @@ def barplots(dat, type):
     df_long = df_long.rename(columns={'variable': 'Sample type',
                                     'value': type,
                                         'base_ID': 'Sample ID'})
+
+
     plot = (ggplot(df_long, aes(x='Sample ID', y=type, fill='Sample type'))
     + geom_col(stat='identity', position='dodge')
     + labs(title=type)
-    + theme_classic()
+    + theme_classic() 
     + theme(axis_text_x=element_text(rotation=-15, hjust=0.1))
     )
+
+    if type == "Percent Unstable MSI Sites ":
+        plot = plot + ylim(0, 100) + labs(title="Percent (%) Unstable MSI Sites ")
+
     outfile= "output/" + type+" barplots.png"
     plot.save(outfile, height=6, width=10)
 
