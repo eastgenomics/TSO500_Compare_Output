@@ -1,18 +1,15 @@
-### Tabulate the fusions called from all samples
 import glob
 import numpy as np
 import pandas as pd
 from plotnine import *
 
 ## Bit of context (◕‿◕✿)
-## I am trying to compare the fusions of two samples groups usings
+## I am trying to compare the fusions of two samples groups using
 ## two datasets. The sample groups are: 1) clinical samples and
 ## 2) validation samples
 ## There are two files that have fusions: 1) CVO files and
 ## 2) abridged.tsv.coding_effect files.
 
-
-## define functions
 
 def merge_abdriged_files(abriged_path, output_filename):
     """ get all the abriged tsv outputted from pancan pipeline and merge
