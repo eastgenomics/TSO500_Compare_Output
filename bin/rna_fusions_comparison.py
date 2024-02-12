@@ -77,8 +77,21 @@ def merge_cvo_files(cvo_path, output_filename):
 def find_clinical_sample_fusions(merged_abridged,
                                   merged_cvo,
                                   output_filename):
-    # For the clinical samples, lets compare the merged_cvo &
-    # merged_abriged.tsv reports. 1. Make a dictionary of the fusions
+    """For the clinical samples (second field has 23) merge all the
+    fusions called from the merged_cvo & merged_abriged.tsv reports.
+
+    First make dictionaries for fusions from the merged abridged and
+    then from merged cvo. Secondly make a dataframe from both
+    dictionaries and save it.
+
+    Args:
+        merged_abridged (pandas df): merged abriged fusions file
+        generated from function merge_abdriged_files
+        merged_cvo (pandas df): merged cvo fusions file
+        generated from function merge_cvo_files
+        output_filename (str): output file name
+    """
+    # 1. Make a dictionary of the fusions
     # from pancan pipeline merged_abriged.tsv
     merged_ab = pd.read_csv('output/{}'.format(merged_abridged), sep='\t')
     merged_ab = merged_ab[["sample_name", "#FusionName"]]
@@ -165,12 +178,26 @@ def find_clinical_sample_fusions(merged_abridged,
 
 def find_validation_sample_fusions(merged_abridged,
                                   output_fusions):
+    """For the validation samples (missing 23 in the second field)
+    merge all the fusions called from merged_abriged.tsv reports.
+
+    First make dictionaries for fusions from the merged abridged and
+    then make a dataframe from the dictionary. Then categories the
+    samples based on the experiment type.
+
+    Args:
+        merged_abridged (pandas df): merged abriged fusions file
+        generated from function merge_abdriged_files
+        output_filename (str): output file name
+    """
     # Now lets focus on validation samples.
     # We can read all in and merge the fusions
     merged_ab = pd.read_csv('output/{}'.format(merged_abridged), sep='\t')
     merged_ab = merged_ab[["sample_name", "#FusionName"]]
     # filter for clinical samples from abridged df,
-    # they all start with 23 in second column
+    # they all start with 23 in second column. If we search for just
+    # 23 it can filter out the batch 23PCR so we want just the
+    # samples with second field starting 232 or 233
     merged_ab = merged_ab[
         ~merged_ab['sample_name'].str.contains('-232', regex=False)
         ]
@@ -244,6 +271,22 @@ def find_validation_sample_fusions(merged_abridged,
 def performance_calculations(pancan_fusions_df, expected_fusions,
                             output_fusions_filename,
                             output_fusions_count_filename):
+    """_summary_
+
+    Args:
+        pancan_fusions_df (pandas df): df contains fusions of each
+        sample generated from function find_validation_sample_fusions
+        expected_fusions (pandas df): df where there are
+        two columns detailing sample and fusions. Each row being a
+        sample with fusions seperated by ", "
+        output_fusions_filename (str): output file name
+        output_fusions_count_filename (str): output counts file name
+
+    Returns:
+        pandas dataframe: dataframe where each row is a sample and metrics
+        such as true positives (TP), false positives (FP) and false
+        negatives (FN) is listed
+    """
     # Now we can read in the expected fusions and match based on name
     expected_fusions = pd.read_csv(expected_fusions,
                                     names=[
@@ -277,6 +320,11 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
     df_tabulate["type"] = df["type"]
     df_tabulate["observed_fusion"] = df["observed_fusion"]
     df_tabulate["expected_fusion"] = df["expected_fusion"]
+
+    # we want to populate the TP, FP and FN negatives. For each row,
+    # we take take the observed fusions and expected fusions and
+    # calculate the TP, FP and FN and put the list in the df and the
+    # total count in the df_tabulate object.
 
     for i in range(len(df)):
         # convert comma sep to lists
