@@ -64,7 +64,7 @@ def merge_cvo_files(cvo_path, output_filename):
             )
         fusionscvo = list(df_cvo.iloc[int(start_row)+2:int(end_row)-1].V1)
         # convert list into comma sep string
-        fusionscvo =  ', '.join(map(str, fusionscvo))
+        fusionscvo = ', '.join(map(str, fusionscvo))
         # read into a dictionary
         sample_name = file.split("/")[-1].split("_")[0]
         fusiondict = dict(sample=sample_name, fusions=fusionscvo)
@@ -169,7 +169,8 @@ def find_validation_sample_fusions(merged_abridged,
     # We can read all in and merge the fusions
     merged_ab = pd.read_csv('output/{}'.format(merged_abridged), sep='\t')
     merged_ab = merged_ab[["sample_name", "#FusionName"]]
-    # filter for clinical samples from abridged df, they all start with 23 in second column
+    # filter for clinical samples from abridged df,
+    # they all start with 23 in second column
     merged_ab = merged_ab[
         ~merged_ab['sample_name'].str.contains('-232', regex=False)
         ]
@@ -198,14 +199,18 @@ def find_validation_sample_fusions(merged_abridged,
 
     pancan_fusions_df = pancan_fusions_df.sort_values(by=['sample'])
     # get the first sample ID
-    pancan_fusions_df['sample_ID'] = pancan_fusions_df['sample'].str.split("-").str[0]
+    pancan_fusions_df['sample_ID'] = pancan_fusions_df[
+        'sample'
+        ].str.split("-").str[0]
     # get the batch ID info
-    pancan_fusions_df['batch_ID'] = pancan_fusions_df['sample'].str.split("-").str[2]
+    pancan_fusions_df['batch_ID'] = pancan_fusions_df[
+        'sample'
+        ].str.split("-").str[2]
     # create empty column of what type of dilution or dataset sample is from
     pancan_fusions_df['type'] = ""
     pancan_fusions_df['type'] = list(
         map(
-        lambda x: x.endswith('R'),pancan_fusions_df["sample_ID"]
+        lambda x: x.endswith('R'), pancan_fusions_df["sample_ID"]
         )
         )
     pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(
@@ -217,23 +222,24 @@ def find_validation_sample_fusions(merged_abridged,
         )
     # if sample name is just one, then its the neat samples
     for i in range(len(pancan_fusions_df)):
-        count = pancan_fusions_df.loc[i,'sample'].count("-")
+        count = pancan_fusions_df.loc[i, 'sample'].count("-")
         if count <= 1:
-            pancan_fusions_df.loc[i,'type'] = "Neat 22"
-            pancan_fusions_df.loc[i,'batch_ID'] = "Neat 22"
+            pancan_fusions_df.loc[i, 'type'] = "Neat 22"
+            pancan_fusions_df.loc[i, 'batch_ID'] = "Neat 22"
     pancan_fusions_df['sample_ID'] = pancan_fusions_df[
         'sample_ID'
         ].str.replace(
             r'R$', '', regex=True
             )
     pancan_fusions_df = pancan_fusions_df[[
-        "sample", "sample_ID","batch_ID", "type", "fusions"
+        "sample", "sample_ID", "batch_ID", "type", "fusions"
         ]]
     pancan_fusions_df.to_csv(
         "output/{}".format(output_fusions), sep="\t"
         )
 
     return pancan_fusions_df
+
 
 def performance_calculations(pancan_fusions_df, expected_fusions,
                             output_fusions_filename,
