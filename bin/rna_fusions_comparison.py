@@ -283,15 +283,16 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
                             "FP": "False Positives",
                             "FN": "False Negatives"})
 
-    df_tabulate = df_tabulate.rename(columns={"sample": "Sample",
-                              "sample_ID": "Sample ID",
-                              "batch_ID": "Batch_ID",
-                              "type": "Type",
-                              "observed_fusion": "Observed Fusions",
-                              "expected_fusion": "Expected Fusions",
-                              "TP": "True Positives",
-                              "FP": "False Positives",
-                              "FN": "False Negatives"})
+    df_tabulate = df_tabulate.rename(columns={
+                                        "sample": "Sample",
+                                        "sample_ID": "Sample ID",
+                                        "batch_ID": "Batch_ID",
+                                        "type": "Type",
+                                        "observed_fusion": "Observed Fusions",
+                                        "expected_fusion": "Expected Fusions",
+                                        "TP": "True Positives",
+                                        "FP": "False Positives",
+                                        "FN": "False Negatives"})
 
     # all fusions listed here
     df.to_csv(
@@ -313,9 +314,9 @@ def barplot_performance(fusions_count_df):
 
     for col in plot_cols:
         print(col)
-        fusions_count_df[col] = pd.to_numeric(fusions_count_df[col])
-        max_y_axis = int(fusions_count_df[col].max())
-        plot = (ggplot(fusions_count_df, aes( x = "Sample ID", y = col,  fill="Type"))
+        fusions_count_df[col]=pd.to_numeric(fusions_count_df[col])
+        max_y_axis=int(fusions_count_df[col].max())
+        plot=(ggplot(fusions_count_df, aes( x = "Sample ID", y = col,  fill="Type"))
                     + geom_col(stat='identity', position='dodge')
                     + labs(x="Sample", y=col, title = col)
                     + theme_classic()
@@ -328,29 +329,31 @@ def barplot_performance(fusions_count_df):
 
 def main():
 
-    merge_abdriged_files(abriged_path = "rna_fusions_to_compare/*.abridged.tsv.coding_effect",
-                        output_filename = "merged_abdriged_fusions.tsv")
+    merge_abdriged_files(
+        abriged_path="rna_fusions_to_compare/*.abridged.tsv.coding_effect",
+        output_filename="merged_abdriged_fusions.tsv")
 
-    merge_cvo_files(cvo_path = "rna_fusions_to_compare/*Output.tsv",
-                    output_filename = "merged_cvo_fusions.tsv")
+    merge_cvo_files(
+        cvo_path="rna_fusions_to_compare/*Output.tsv",
+        output_filename="merged_cvo_fusions.tsv")
 
     find_clinical_sample_fusions(
-        merged_cvo = "merged_cvo_fusions.tsv",
-        merged_abridged = "merged_abdriged_fusions.tsv",
-        output_filename = "clinical_samples_fusions.tsv")
+        merged_cvo="merged_cvo_fusions.tsv",
+        merged_abridged="merged_abdriged_fusions.tsv",
+        output_filename="clinical_samples_fusions.tsv")
 
     pancan_fusions_dat = find_validation_sample_fusions(
-        merged_abridged = "merged_abdriged_fusions.tsv",
-        output_fusions = "validation_samples_fusions.tsv")
+        merged_abridged="merged_abdriged_fusions.tsv",
+        output_fusions="validation_samples_fusions.tsv")
 
     fusions_counts = performance_calculations(
-        pancan_fusions_df = pancan_fusions_dat,
-        expected_fusions = "rna_fusions_to_compare/expected_fusions.txt",
-        output_fusions_filename = "validation_samples_and_expected_fusions.tsv",
-        output_fusions_count_filename = "validation_samples_and_expected_fusions_count.tsv")
+        pancan_fusions_df=pancan_fusions_dat,
+        expected_fusions="rna_fusions_to_compare/expected_fusions.txt",
+        output_fusions_filename="validation_samples_and_expected_fusions.tsv",
+        output_fusions_count_filename="validation_samples_and_expected_fusions_count.tsv")
 
     barplot_performance(
-        fusions_count_df = fusions_counts
+        fusions_count_df=fusions_counts
     )
 
 
