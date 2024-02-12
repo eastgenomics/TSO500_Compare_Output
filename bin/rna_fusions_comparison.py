@@ -35,8 +35,8 @@ def merge_abdriged_files(abriged_path, output_filename):
         dfs.append(df)
 
     # concat the files and save
-    (pd.concat(dfs,ignore_index=True)
-    .to_csv('output/{}'.format(output_filename), sep='\t',index=False))
+    (pd.concat(dfs, ignore_index=True)
+        .to_csv('output/{}'.format(output_filename), sep='\t', index=False))
 
 
 def merge_cvo_files(cvo_path, output_filename):
@@ -50,15 +50,21 @@ def merge_cvo_files(cvo_path, output_filename):
     dfs_cvo = []
     fusiondict_all = []
     for file in file_list:
-        # give it random column names so pd can read it in, the names mean nothing
-        df_cvo = pd.read_csv(file,names=["V1", "V2", "V3", "V4", "V5",
-                                        "V6", "V7", "V8", "V9", "V10",
-                                        "V11"], sep ="\t")
+        # give it random column names so pd can read it in,
+        # the names mean nothing
+        df_cvo = pd.read_csv(file, names=["V1", "V2", "V3", "V4", "V5",
+                                          "V6", "V7", "V8", "V9", "V10",
+                                          "V11"], sep="\t")
         # figure out rows which contains fusion info
-        start_row = df_cvo.index.get_loc(df_cvo.loc[df_cvo['V1'] == '[Fusions]'].index[0])
-        end_row= df_cvo.index.get_loc(df_cvo.loc[df_cvo['V1'] == '[Small Variants]'].index[0])
+        start_row = df_cvo.index.get_loc(
+            df_cvo.loc[df_cvo['V1'] == '[Fusions]'].index[0]
+            )
+        end_row = df_cvo.index.get_loc(
+            df_cvo.loc[df_cvo['V1'] == '[Small Variants]'].index[0]
+            )
         fusionscvo = list(df_cvo.iloc[int(start_row)+2:int(end_row)-1].V1)
-        fusionscvo =  ', '.join(map(str, fusionscvo))  # convert list into comma sep string
+        # convert list into comma sep string
+        fusionscvo =  ', '.join(map(str, fusionscvo))
         # read into a dictionary
         sample_name = file.split("/")[-1].split("_")[0]
         fusiondict = dict(sample = sample_name, fusions = fusionscvo)
@@ -68,13 +74,21 @@ def merge_cvo_files(cvo_path, output_filename):
         'output/{}'.format(output_filename), sep='\t', index=False))
 
 
-def find_clinical_sample_fusions(merged_abridged, merged_cvo, output_filename):
-    # For the clinical samples, lets compare the merged_cvo & merged_abriged.tsv reports
-    # 1. Make a dictionary of the fusions from pancan pipeline merged_abriged.tsv
+def find_clinical_sample_fusions(merged_abridged,
+                                  merged_cvo,
+                                  output_filename):
+    # For the clinical samples, lets compare the merged_cvo &
+    # merged_abriged.tsv reports. 1. Make a dictionary of the fusions
+    # from pancan pipeline merged_abriged.tsv
     merged_ab = pd.read_csv('output/{}'.format(merged_abridged), sep='\t')
     merged_ab = merged_ab[["sample_name", "#FusionName"]]
-    # filter for clinical samples from abridged df, they all start with 23 in second column
-    merged_ab_cs = merged_ab.set_index('sample_name').filter(regex='-23', axis=0)
+    # filter for clinical samples from abridged df, they all start
+    # with 23 in second column
+    merged_ab_cs = merged_ab.set_index(
+                                    'sample_name'
+                                    ).filter(
+                                    regex='-23', axis=0
+                                    )
     c_samples = list(set(merged_ab_cs.index))
     merged_ab_cs['sample_name'] = merged_ab_cs.index
     pancan_fusions = []
@@ -124,7 +138,7 @@ def find_clinical_sample_fusions(merged_abridged, merged_cvo, output_filename):
 
     # create final table with the clinical samples and
     # fusions called from both pipelines
-    df = pd.DataFrame(columns=['sample','pancan','tso500'])
+    df = pd.DataFrame(columns=['sample', 'pancan', 'tso500'])
     df['sample'] = c_samples
     # for each samples, get the fusions from the pancan dataframe
     # and tso500 dataframe. If empty or "nan", then skip
