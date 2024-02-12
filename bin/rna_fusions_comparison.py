@@ -24,7 +24,12 @@ def merge_abdriged_files(abriged_path, output_filename):
     dfs = []
     for file in file_list:
         df = pd.read_csv(file, sep='\t')
-        df['sample_name'] = file.split("/")[-1].split(".")[0]
+        samplename = file.split("/")[-1].split(".")[0]
+        if samplename == "SeraSeqControl":
+            samplename = "SSC"
+        elif samplename.count("-") == 1:
+            samplename = samplename.replace("-", "")
+        df['sample_name'] = samplename
         first_column = df.pop('sample_name')
         df.insert(0, 'sample_name', first_column)
         dfs.append(df)
@@ -190,6 +195,12 @@ def find_validation_sample_fusions(merged_abridged,
     pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(True, '1:4 dilution 23PCR1')
     pancan_fusions_df.loc[pancan_fusions_df["batch_ID"] == "24PCR1", "type"] = "1:2 dilution 24PCR1"
     pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(False, '1:2 dilution 23PCR1')
+    # if sample name is just one, then its the neat samples
+    for i in range(len(pancan_fusions_df)):
+        count = pancan_fusions_df.loc[i,'sample'].count("-")
+        if count <= 1:
+            pancan_fusions_df.loc[i,'type'] = "Neat 22"
+            pancan_fusions_df.loc[i,'batch_ID'] = "Neat 22"
     pancan_fusions_df['sample_ID'] = pancan_fusions_df['sample_ID'].str.replace(r'R$', '', regex=True)
     pancan_fusions_df = pancan_fusions_df[["sample", "sample_ID","batch_ID", "type", "fusions"]]
     pancan_fusions_df.to_csv("output/{}".format(output_fusions), sep="\t")
@@ -316,7 +327,7 @@ def barplot_performance(fusions_count_df):
                     + geom_col(stat='identity', position='dodge')
                     + labs(x="Sample", y=col, title = col)
                     + theme_classic()
-                    + theme(axis_text_x=element_text(rotation=-15, hjust=0.1)))
+                    + theme(axis_text_x=element_text(rotation=-45, hjust=0.1)))
 
         plot = plot + scale_y_continuous(limits=(0, max_y_axis))
         output_name = "output/fusions_barplots_{}.png".format(col)
