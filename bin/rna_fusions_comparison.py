@@ -226,37 +226,36 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
     df_tabulate["observed_fusion"]  = df["observed_fusion"]
     df_tabulate["expected_fusion"]  = df["expected_fusion"]
 
-
     for i in range(len(df)):
         # convert comma sep to lists
-        obs_fusion = df.loc[i,'observed_fusion']
+        obs_fusion = df.loc[i, 'observed_fusion']
         obs_fusion = obs_fusion.split(", ")
-        df_tabulate.loc[i,'observed_fusion'] = len(obs_fusion)
-        exp_fusion = df.loc[i,'expected_fusion']
+        df_tabulate.loc[i, 'observed_fusion'] = len(obs_fusion)
+        exp_fusion = df.loc[i, 'expected_fusion']
         if isinstance(exp_fusion, float):
             exp_fusion = []
-            df_tabulate.loc[i,'expected_fusion'] = 0
+            df_tabulate.loc[i, 'expected_fusion'] = 0
         else:
             exp_fusion = exp_fusion.split(", ")
-            df_tabulate.loc[i,'expected_fusion'] = len(exp_fusion)
+            df_tabulate.loc[i, 'expected_fusion'] = len(exp_fusion)
         # Intersect/Shared
         true_pos = list(set(obs_fusion).intersection(set(exp_fusion)))
         true_pos = [sub.replace(' ', ', ') for sub in true_pos]
         # convert from list to comma seperated string
         true_pos_list = ', '.join(map(str, true_pos)).split(", ")
         # empty fusion is just '', so need to set it as empty list
-        if '' in true_pos_list :
+        if '' in true_pos_list:
             true_pos_list = []
         true_pos = ', '.join(map(str, true_pos))
-        df.loc[i,'TP'] = true_pos
-        df_tabulate.loc[i,'TP'] = len(true_pos_list)
+        df.loc[i, 'TP'] = true_pos
+        df_tabulate.loc[i, 'TP'] = len(true_pos_list)
         # only seen in expected fusions
         false_pos = list(set(obs_fusion) - set(exp_fusion))
         false_pos = [sub.replace(' ', ', ') for sub in false_pos]
         # convert from list to comma seperated string
         false_pos_list = ', '.join(map(str, false_pos)).split(", ")
         # empty fusion is just '', so need to set it as empty list
-        if '' in false_pos_list :
+        if '' in false_pos_list:
             false_pos_list = []
         false_pos = ', '.join(map(str, false_pos))
         df.loc[i,'FP'] = false_pos
@@ -267,14 +266,13 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
         # convert from list to comma seperated string
         false_neg_list = ', '.join(map(str, false_neg)).split(", ")
         # empty fusion is just '', so need to set it as empty list
-        if '' in false_neg_list :
+        if '' in false_neg_list:
             false_neg_list = []
         false_neg = ', '.join(map(str, false_neg))
-        df.loc[i,'FN'] = false_neg
-        df_tabulate.loc[i,'FN'] = len(false_neg_list)
+        df.loc[i, 'FN'] = false_neg
+        df_tabulate.loc[i, 'FN'] = len(false_neg_list)
 
-
-    ## rename headers
+    # rename headers
     df = df.rename(columns={"sample": "Sample",
                             "sample_ID": "Sample ID",
                             "batch_ID": "Batch_ID",
@@ -286,19 +284,23 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
                             "FN": "False Negatives"})
 
     df_tabulate = df_tabulate.rename(columns={"sample": "Sample",
-                            "sample_ID": "Sample ID",
-                            "batch_ID": "Batch_ID",
-                            "type": "Type",
-                            "observed_fusion": "Observed Fusions",
-                            "expected_fusion": "Expected Fusions",
-                            "TP": "True Positives",
-                            "FP": "False Positives",
-                            "FN": "False Negatives"})
+                              "sample_ID": "Sample ID",
+                              "batch_ID": "Batch_ID",
+                              "type": "Type",
+                              "observed_fusion": "Observed Fusions",
+                              "expected_fusion": "Expected Fusions",
+                              "TP": "True Positives",
+                              "FP": "False Positives",
+                              "FN": "False Negatives"})
 
-    ## all fusions listed here
-    df.to_csv("output/{}".format(output_fusions_filename), sep="\t")
-    ## tabulate with just numbers here and output it for plots later
-    df_tabulate.to_csv("output/{}".format(output_fusions_count_filename), sep="\t")
+    # all fusions listed here
+    df.to_csv(
+        "output/{}".format(output_fusions_filename), sep="\t"
+        )
+    # tabulate with just numbers here and output it for plots later
+    df_tabulate.to_csv(
+        "output/{}".format(output_fusions_count_filename), sep="\t"
+        )
 
     return df_tabulate
 
