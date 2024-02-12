@@ -67,7 +67,7 @@ def merge_cvo_files(cvo_path, output_filename):
         fusionscvo =  ', '.join(map(str, fusionscvo))
         # read into a dictionary
         sample_name = file.split("/")[-1].split("_")[0]
-        fusiondict = dict(sample = sample_name, fusions = fusionscvo)
+        fusiondict = dict(sample=sample_name, fusions=fusionscvo)
         fusiondict_all.append(fusiondict)
 
     (pd.DataFrame.from_dict(fusiondict_all).to_csv(
@@ -102,7 +102,8 @@ def find_clinical_sample_fusions(merged_abridged,
 
     # 2. Make a dictionary of the fusions from the TSO500 pipeline merged_cvo
     merged_cvo = pd.read_csv('output/{}'.format(merged_cvo), sep='\t')
-    # filter for clinical samples from abridged df, they all start with 23 in second column
+    # filter for clinical samples from abridged df,
+    # they all start with 23 in second column
     merged_cvo_cs = merged_cvo.set_index('sample').filter(regex='-23', axis=0)
     c_samples = list(set(merged_cvo_cs.index))
     merged_cvo_cs['sample'] = merged_cvo_cs.index
@@ -115,25 +116,24 @@ def find_clinical_sample_fusions(merged_abridged,
         temp_dict['fusions'] = fusions
         tso_fusions.append(temp_dict)
 
-
     # convert dictionaries into dataframes and add a column to show which
     # pipeline they were processed through and convert list to string
     pancan_fusions_df = pd.DataFrame.from_dict(pancan_fusions)
     pancan_fusions_df['fusions'] = (
         pancan_fusions_df['fusions']
         .transform(
-            lambda x: ", ".join(map(str,x))
+            lambda x: ", ".join(map(str, x))
         )
     )
     tso_fusions_df = pd.DataFrame.from_dict(tso_fusions)
     tso_fusions_df['fusions'] = (
         tso_fusions_df['fusions']
         .transform(
-            lambda x: ", ".join(map(str,x))
+            lambda x: ", ".join(map(str, x))
         )
     )
 
-    df = pd.concat([pancan_fusions_df,tso_fusions_df], ignore_index=True)
+    df = pd.concat([pancan_fusions_df, tso_fusions_df], ignore_index=True)
     df = df.sort_values(by=['sample'])
 
     # create final table with the clinical samples and
@@ -143,31 +143,39 @@ def find_clinical_sample_fusions(merged_abridged,
     # for each samples, get the fusions from the pancan dataframe
     # and tso500 dataframe. If empty or "nan", then skip
     for i in range(len(df)):
-        sam = df.loc[i,'sample']
+        sam = df.loc[i, 'sample']
         if sam in list(pancan_fusions_df['sample']):
-            val = pancan_fusions_df.loc[pancan_fusions_df['sample'] == sam].fusions
+            val = pancan_fusions_df.loc[
+                pancan_fusions_df['sample'] == sam
+                ].fusions
             if val is not val.empty:
                 sam_fusion = val.values[0]
-                df.loc[i,'pancan'] = sam_fusion
+                df.loc[i, 'pancan'] = sam_fusion
         if "23TSO" in sam:
-            df.loc[i,'pancan'] = ""
+            df.loc[i, 'pancan'] = ""
         if sam in list(tso_fusions_df['sample']):
             val = tso_fusions_df.loc[tso_fusions_df['sample'] == sam].fusions
             if val is not val.empty:
                 if list(val)[0] != "nan":
                     sam_fusion = val.values[0]
-                    df.loc[i,'tso500'] = sam_fusion
+                    df.loc[i, 'tso500'] = sam_fusion
 
     df.to_csv('output/{}'.format(output_filename), sep="\t")
 
+
 def find_validation_sample_fusions(merged_abridged,
-                                output_fusions):
-    # Now lets focus on validation samples. We can read all in and merge the fusions 
+                                  output_fusions):
+    # Now lets focus on validation samples.
+    # We can read all in and merge the fusions
     merged_ab = pd.read_csv('output/{}'.format(merged_abridged), sep='\t')
     merged_ab = merged_ab[["sample_name", "#FusionName"]]
     # filter for clinical samples from abridged df, they all start with 23 in second column
-    merged_ab = merged_ab[~merged_ab['sample_name'].str.contains('-232', regex=False)]
-    merged_ab = merged_ab[~merged_ab['sample_name'].str.contains('-233', regex=False)]
+    merged_ab = merged_ab[
+        ~merged_ab['sample_name'].str.contains('-232', regex=False)
+        ]
+    merged_ab = merged_ab[
+        ~merged_ab['sample_name'].str.contains('-233', regex=False)
+        ]
     c_samples = list(set(merged_ab['sample_name']))
     pancan_fusions = []
     for sam in c_samples:
@@ -184,7 +192,7 @@ def find_validation_sample_fusions(merged_abridged,
     pancan_fusions_df['fusions'] = (
         pancan_fusions_df['fusions']
         .transform(
-            lambda x: ", ".join(map(str,x))
+            lambda x: ", ".join(map(str, x))
         )
     )
 
@@ -195,19 +203,35 @@ def find_validation_sample_fusions(merged_abridged,
     pancan_fusions_df['batch_ID'] = pancan_fusions_df['sample'].str.split("-").str[2]
     # create empty column of what type of dilution or dataset sample is from
     pancan_fusions_df['type'] = ""
-    pancan_fusions_df['type'] = list(map(lambda x: x.endswith('R'),pancan_fusions_df["sample_ID"]))
-    pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(True, '1:4 dilution 23PCR1')
+    pancan_fusions_df['type'] = list(
+        map(
+        lambda x: x.endswith('R'),pancan_fusions_df["sample_ID"]
+        )
+        )
+    pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(
+        True, '1:4 dilution 23PCR1'
+        )
     pancan_fusions_df.loc[pancan_fusions_df["batch_ID"] == "24PCR1", "type"] = "1:2 dilution 24PCR1"
-    pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(False, '1:2 dilution 23PCR1')
+    pancan_fusions_df['type'] = pancan_fusions_df['type'].replace(
+        False, '1:2 dilution 23PCR1'
+        )
     # if sample name is just one, then its the neat samples
     for i in range(len(pancan_fusions_df)):
         count = pancan_fusions_df.loc[i,'sample'].count("-")
         if count <= 1:
             pancan_fusions_df.loc[i,'type'] = "Neat 22"
             pancan_fusions_df.loc[i,'batch_ID'] = "Neat 22"
-    pancan_fusions_df['sample_ID'] = pancan_fusions_df['sample_ID'].str.replace(r'R$', '', regex=True)
-    pancan_fusions_df = pancan_fusions_df[["sample", "sample_ID","batch_ID", "type", "fusions"]]
-    pancan_fusions_df.to_csv("output/{}".format(output_fusions), sep="\t")
+    pancan_fusions_df['sample_ID'] = pancan_fusions_df[
+        'sample_ID'
+        ].str.replace(
+            r'R$', '', regex=True
+            )
+    pancan_fusions_df = pancan_fusions_df[[
+        "sample", "sample_ID","batch_ID", "type", "fusions"
+        ]]
+    pancan_fusions_df.to_csv(
+        "output/{}".format(output_fusions), sep="\t"
+        )
 
     return pancan_fusions_df
 
@@ -222,8 +246,12 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
     df = pancan_fusions_df.merge(expected_fusions, on='sample_ID', how='left')
     df = df.rename(columns={"fusions_x": "observed_fusion", "fusions_y": "expected_fusion"})
     # the observed fusions have two comma seperated so we will repalce
-    df['observed_fusion'] = df['observed_fusion'].replace("--", "::", regex=True)
-    df['expected_fusion'] = df['expected_fusion'].replace("-", "::", regex=True)
+    df['observed_fusion'] = df['observed_fusion'].replace(
+        "--", "::", regex=True
+        )
+    df['expected_fusion'] = df['expected_fusion'].replace(
+        "-", "::", regex=True
+        )
 
     # make extra column
     df['TP'] = ""
@@ -231,7 +259,8 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
     df['FN'] = ""
     # have another df just to tabulate
     df_tabulate = pd.DataFrame(columns=["sample", "sample_ID", "batch_ID",
-                                        "type", "observed_fusion", "expected_fusion",
+                                        "type", "observed_fusion",
+                                        "expected_fusion",
                                         "TP", "FP", "FN"])
     df_tabulate["sample"]  = df["sample"]
     df_tabulate["sample_ID"]  = df["sample_ID"]
