@@ -240,10 +240,13 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
                             output_fusions_count_filename):
     # Now we can read in the expected fusions and match based on name
     expected_fusions = pd.read_csv(expected_fusions,
-                                    names = [
-                                        "sample_ID", "fusions"], sep = "\t")
+                                    names=[
+                                        "sample_ID", "fusions"
+                                        ], sep="\t")
 
-    df = pancan_fusions_df.merge(expected_fusions, on='sample_ID', how='left')
+    df = pancan_fusions_df.merge(
+                            expected_fusions, on='sample_ID', how='left'
+                            )
     df = df.rename(columns={"fusions_x": "observed_fusion", "fusions_y": "expected_fusion"})
     # the observed fusions have two comma seperated so we will repalce
     df['observed_fusion'] = df['observed_fusion'].replace(
@@ -262,12 +265,12 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
                                         "type", "observed_fusion",
                                         "expected_fusion",
                                         "TP", "FP", "FN"])
-    df_tabulate["sample"]  = df["sample"]
-    df_tabulate["sample_ID"]  = df["sample_ID"]
-    df_tabulate["batch_ID"]  = df["batch_ID"]
-    df_tabulate["type"]  = df["type"]
-    df_tabulate["observed_fusion"]  = df["observed_fusion"]
-    df_tabulate["expected_fusion"]  = df["expected_fusion"]
+    df_tabulate["sample"] = df["sample"]
+    df_tabulate["sample_ID"] = df["sample_ID"]
+    df_tabulate["batch_ID"] = df["batch_ID"]
+    df_tabulate["type"] = df["type"]
+    df_tabulate["observed_fusion"] = df["observed_fusion"]
+    df_tabulate["expected_fusion"] = df["expected_fusion"]
 
     for i in range(len(df)):
         # convert comma sep to lists
@@ -301,8 +304,8 @@ def performance_calculations(pancan_fusions_df, expected_fusions,
         if '' in false_pos_list:
             false_pos_list = []
         false_pos = ', '.join(map(str, false_pos))
-        df.loc[i,'FP'] = false_pos
-        df_tabulate.loc[i,'FP'] = len(false_pos_list)
+        df.loc[i, 'FP'] = false_pos
+        df_tabulate.loc[i, 'FP'] = len(false_pos_list)
         # only seen in observed fusions
         false_neg = list(set(exp_fusion) - set(obs_fusion))
         false_neg = [sub.replace(' ', ', ') for sub in false_neg]
@@ -353,17 +356,23 @@ def barplot_performance(fusions_count_df):
     """ The count fusion dataframe can be plotted as barplots with
         different types as groups.
     """
-    plot_cols = ["Observed Fusions", "True Positives", "False Positives", "False Negatives"]
+    plot_cols = ["Observed Fusions", "True Positives",
+                  "False Positives", "False Negatives"]
 
     for col in plot_cols:
         print(col)
-        fusions_count_df[col]=pd.to_numeric(fusions_count_df[col])
-        max_y_axis=int(fusions_count_df[col].max())
-        plot=(ggplot(fusions_count_df, aes( x = "Sample ID", y = col,  fill="Type"))
+        fusions_count_df[col] = pd.to_numeric(fusions_count_df[col])
+        max_y_axis = int(fusions_count_df[col].max())
+        plot=(ggplot(fusions_count_df, aes(
+                    x="Sample ID", y=col, fill="Type")
+                    )
                     + geom_col(stat='identity', position='dodge')
-                    + labs(x="Sample", y=col, title = col)
+                    + labs(x="Sample", y=col, title=col)
                     + theme_classic()
-                    + theme(axis_text_x=element_text(rotation=-45, hjust=0.1)))
+                    + theme(
+                        axis_text_x=element_text(rotation=-45, hjust=0.1)
+                        )
+                    )
 
         plot = plot + scale_y_continuous(limits=(0, max_y_axis))
         output_name = "output/fusions_barplots_{}.png".format(col)
