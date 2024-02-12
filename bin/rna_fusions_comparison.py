@@ -369,7 +369,7 @@ def barplot_performance(fusions_count_df):
         print(col)
         fusions_count_df[col] = pd.to_numeric(fusions_count_df[col])
         max_y_axis = int(fusions_count_df[col].max())
-        plot=(ggplot(fusions_count_df, aes(
+        plot = (ggplot(fusions_count_df, aes(
                     x="Sample ID", y=col, fill="Type")
                     )
                     + geom_col(stat='identity', position='dodge')
@@ -378,7 +378,7 @@ def barplot_performance(fusions_count_df):
                     + theme(
                         axis_text_x=element_text(rotation=-45, hjust=0.1)
                         )
-                    )
+                )
 
         plot = plot + scale_y_continuous(limits=(0, max_y_axis))
         output_name = "output/fusions_barplots_{}.png".format(col)
