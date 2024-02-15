@@ -108,7 +108,7 @@ def find_clinical_sample_fusions(merged_abridged,
     for sam in c_samples:
         temp_dict = {}
         temp_dict['sample'] = sam
-        sam_df = merged_ab_cs[merged_ab_cs['sample_name'].str.contains(sam)]
+        sam_df = merged_ab[merged_ab['sample_name'] == sam]
         fusions = list(set(sam_df['#FusionName'].tolist()))
         temp_dict['fusions'] = fusions
         pancan_fusions.append(temp_dict)
@@ -124,7 +124,7 @@ def find_clinical_sample_fusions(merged_abridged,
     for sam in c_samples:
         temp_dict = {}
         temp_dict['sample'] = sam
-        sam_df = merged_cvo_cs[merged_cvo_cs['sample'].str.contains(sam)]
+        sam_df = merged_cvo_cs[merged_cvo_cs['sample'] == sam]
         fusions = list(set(sam_df['fusions'].tolist()))
         temp_dict['fusions'] = fusions
         tso_fusions.append(temp_dict)
@@ -182,7 +182,7 @@ def find_validation_sample_fusions(merged_abridged,
     merge all the fusions called from merged_abriged.tsv reports.
 
     First make dictionaries for fusions from the merged abridged and
-    then make a dataframe from the dictionary. Then categories the
+    then make a dataframe from the dictionary. Then categorise the
     samples based on the experiment type.
 
     Args:
@@ -209,7 +209,7 @@ def find_validation_sample_fusions(merged_abridged,
     for sam in c_samples:
         temp_dict = {}
         temp_dict['sample'] = sam
-        sam_df = merged_ab[merged_ab['sample_name'].str.contains(sam)]
+        sam_df = merged_ab[merged_ab['sample_name'] == sam]
         fusions = list(set(sam_df['#FusionName'].tolist()))
         temp_dict['fusions'] = fusions
         pancan_fusions.append(temp_dict)
